@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+
+  notification-be:
+    image: openjdk:23
+    container_name: notification-be
+    ports:
+      - 8082:8080
+      - 8002:8000
+
+    expose:
+      - "8002"
+
+    depends_on:
+      - notification-db
+    networks:
+      - my-net
+      #- shared-net
+    volumes:
+      #- ./build/libs/Notification-0.0.1-SNAPSHOT.jar:/app/app.jar
+      - ./Notification-0.0.1-SNAPSHOT.jar:/app/app.jar
+
+    working_dir: /app
+    entrypoint: java -Xdebug -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000 -jar /app/app.jar
+  notification-db:
+    image: mongo:5.0
+    container_name: notification-db
+    ports:
+      - 27019:27017
+    networks:
+      - my-net
+      #- shared-net
+networks:
+  my-net:
+    driver: "bridge"
+    name: my-net
+  #shared-net:
+    #external: true
+
