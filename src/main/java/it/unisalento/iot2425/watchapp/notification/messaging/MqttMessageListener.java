@@ -56,13 +56,22 @@ public class MqttMessageListener {
             notificationRepository.save(notification);
 
             //prendiamo l'fcm token
-            String uri ="http://54.167.160.164:8080/api/users/patient/" + notification.getPatientId();
+            String uri ="http://user-be:8080/api/users/patient/" + notification.getPatientId();
 
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + JWT_ISSUER);
-            HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
-            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(uri, HttpMethod.GET, entity, new ParameterizedTypeReference<Map<String, Object>>() {});
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+            ResponseEntity<Map<String, Object>> response = null;
+
+            try {
+                response = restTemplate.exchange(uri, HttpMethod.GET, entity, new ParameterizedTypeReference<Map<String, Object>>() {});
+                System.out.println("Risposta status: " + response.getStatusCode());
+                System.out.println("Risposta body: " + response.getBody());
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("sono molto stanca");
+            }
 
             //madiamo notifica al paziente
             String fcmToken=(String) response.getBody().get("fcmToken");
@@ -86,12 +95,12 @@ public class MqttMessageListener {
             boolean shoudNotifyAssistant = notificationService.hadNotificationsLastTwoDays(notification.getPatientId());
             if(shoudNotifyAssistant){
                 //mandiamo notifica all'assistente
-                 uri ="http://54.167.160.164:8080/api/users/assistant/" + notification.getAssistantId();
+                 uri ="http://user-be:8080/api/users/assistant/" + notification.getAssistantId();
 
                  restTemplate = new RestTemplate();
                  headers = new HttpHeaders();
                 headers.set("Authorization", "Bearer " + JWT_ISSUER);
-                entity = new HttpEntity<>("parameters", headers);
+                entity = new HttpEntity<>(headers);
                  response = restTemplate.exchange(uri, HttpMethod.GET, entity, new ParameterizedTypeReference<Map<String, Object>>() {});
 
                  fcmToken=(String) response.getBody().get("fcmToken");
