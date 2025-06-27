@@ -56,7 +56,7 @@ public class MqttMessageListener {
             notificationRepository.save(notification);
 
             //prendiamo l'fcm token
-            String uri ="http://user-de:8080/api/users/patient/" + notification.getPatientId();
+            String uri ="http://54.167.160.164:8080/api/users/patient/" + notification.getPatientId();
 
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
@@ -86,7 +86,7 @@ public class MqttMessageListener {
             boolean shoudNotifyAssistant = notificationService.hadNotificationsLastTwoDays(notification.getPatientId());
             if(shoudNotifyAssistant){
                 //mandiamo notifica all'assistente
-                 uri ="http://localhost:8080/api/users/assistant/" + notification.getAssistantId();
+                 uri ="http://54.167.160.164:8080/api/users/assistant/" + notification.getAssistantId();
 
                  restTemplate = new RestTemplate();
                  headers = new HttpHeaders();
