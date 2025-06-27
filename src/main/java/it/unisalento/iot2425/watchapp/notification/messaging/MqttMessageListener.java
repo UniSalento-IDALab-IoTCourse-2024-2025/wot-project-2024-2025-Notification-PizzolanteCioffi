@@ -56,7 +56,7 @@ public class MqttMessageListener {
             notificationRepository.save(notification);
 
             //prendiamo l'fcm token
-            String uri ="http://localhost:8080/api/users/patient/" + notification.getPatientId();
+            String uri ="http://user-de:8080/api/users/patient/" + notification.getPatientId();
 
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
