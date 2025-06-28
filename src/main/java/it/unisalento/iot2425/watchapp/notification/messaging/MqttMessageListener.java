@@ -47,7 +47,7 @@ public class MqttMessageListener {
      JavaMailSender mailSender;
 
     public void handleMessage(String topic, Map<String, Object> message) {
-        System.out.println("Messaggio gestito da handler (ciaoooo): " + topic + " → " + message);
+        System.out.println("Messaggio gestito da handler: " + topic + " → " + message);
 
 
         if(topic.equals(TOPICDATA)){
@@ -61,29 +61,19 @@ public class MqttMessageListener {
 
             notificationRepository.save(notification);
 
-            System.out.println("ho salvato la notifica");
-
-
             //prendiamo l'fcm token
             String uri ="http://user-be:8080/api/users/patient/" + notification.getPatientId();
-
-            System.out.println("l'url che sto provando è: " + uri);
 
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + JWT_ISSUER);
-            System.out.println("Token inviato è: " + JWT_ISSUER);
             HttpEntity<Void> entity = new HttpEntity<>(headers);
             ResponseEntity<Map<String, Object>> response = null;
 
             try {
-                System.out.println("sto per fare la richiesta");
                 response = restTemplate.exchange(uri, HttpMethod.GET, entity, new ParameterizedTypeReference<Map<String, Object>>() {});
-                System.out.println("Risposta status: " + response.getStatusCode());
-                System.out.println("Risposta body: " + response.getBody());
             } catch (HttpClientErrorException e) {
                 System.out.println("Errore HTTP: " + e.getStatusCode());
-                System.out.println("Body errore: " + e.getResponseBodyAsString());
                 e.printStackTrace();
             } catch (ResourceAccessException e) {
                 System.out.println("Errore di accesso risorsa (connessione): " + e.getMessage());
