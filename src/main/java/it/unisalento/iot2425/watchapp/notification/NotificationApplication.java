@@ -12,16 +12,5 @@ public class NotificationApplication {
     public static void main(String[] args) {
         SpringApplication.run(NotificationApplication.class, args);
     }
-    @Bean
-    public CommandLineRunner checkBeans(ApplicationContext ctx) {
-        return args -> {
-            System.out.println("🔎 BEAN REGISTRATI:");
-            for (String name : ctx.getBeanDefinitionNames()) {
-                if (name.toLowerCase().contains("mqtt")) {
-                    System.out.println("🟢 " + name);
-                }
-            }
-        };
-    }
 
 }
