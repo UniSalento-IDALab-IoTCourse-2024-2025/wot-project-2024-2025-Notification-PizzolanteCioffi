@@ -20,6 +20,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMailMessage;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
@@ -39,14 +41,27 @@ public class MqttMessageListener {
      NotificationService notificationService;
 
     @Autowired
+    FirebaseMessagingService firebaseMessagingService;
+
+    @Autowired
      JavaMailSender mailSender;
 
     public void handleMessage(String topic, Map<String, Object> message) {
-        System.out.println("Messaggio gestito da handler: " + topic + " → " + message);
+        System.out.println("Messaggio gestito da handler (ciaoooo): " + topic + " → " + message);
+
+        System.out.println("topic della variabile: "+ TOPICDATA + "topic ricevuto: " + topic);
+
+        if (topic.trim().equalsIgnoreCase(TOPICDATA.trim()) && topic != null) {
+            System.out.println("il topic è data. sto procedendo con la chiamata");
+        } else {
+            System.out.println("sono complementamente rincoglionito e non riesco a capire che sono uguali");
+        }
+
 
         if(topic.equals(TOPICDATA)){
-            //manda notifica
 
+            System.out.println("mi è arrivato un messaggio su data e sto salvando la notifica");
+            //manda notifica
             Notification notification = new Notification();
             notification.setMessage((String) message.get("message"));
             notification.setPatientId((String) message.get("patientId"));
@@ -55,37 +70,41 @@ public class MqttMessageListener {
 
             notificationRepository.save(notification);
 
+            System.out.println("ho salvato la notifica");
+
+
             //prendiamo l'fcm token
             String uri ="http://user-be:8080/api/users/patient/" + notification.getPatientId();
+
+            System.out.println("l'url che sto provando è: " + uri);
 
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + JWT_ISSUER);
+            System.out.println("Token inviato è: " + JWT_ISSUER);
             HttpEntity<Void> entity = new HttpEntity<>(headers);
             ResponseEntity<Map<String, Object>> response = null;
 
             try {
+                System.out.println("sto per fare la richiesta");
                 response = restTemplate.exchange(uri, HttpMethod.GET, entity, new ParameterizedTypeReference<Map<String, Object>>() {});
                 System.out.println("Risposta status: " + response.getStatusCode());
                 System.out.println("Risposta body: " + response.getBody());
+            } catch (HttpClientErrorException e) {
+                System.out.println("Errore HTTP: " + e.getStatusCode());
+                System.out.println("Body errore: " + e.getResponseBodyAsString());
+                e.printStackTrace();
+            } catch (ResourceAccessException e) {
+                System.out.println("Errore di accesso risorsa (connessione): " + e.getMessage());
+                e.printStackTrace();
             } catch (Exception e) {
                 e.printStackTrace();
-                System.out.println("sono molto stanca");
             }
 
             //madiamo notifica al paziente
             String fcmToken=(String) response.getBody().get("fcmToken");
             try{
-                Message fcmMessage = Message.builder()
-                        .setToken(fcmToken)
-                        .setNotification(
-                                com.google.firebase.messaging.Notification.builder()
-                                        .setTitle("Notifica")
-                                        .setBody(notification.getMessage())
-                                        .build()
-                        )
-                        .build();
-                String responseFcm= FirebaseMessaging.getInstance().send(fcmMessage);
+                String responseFcm= firebaseMessagingService.sendNotification(fcmToken, "Notifica", notification.getMessage());
                 System.out.println("FCM message sent successfully: "+ responseFcm);
             } catch (Exception e){
                 e.printStackTrace();
@@ -100,21 +119,13 @@ public class MqttMessageListener {
                  restTemplate = new RestTemplate();
                  headers = new HttpHeaders();
                 headers.set("Authorization", "Bearer " + JWT_ISSUER);
+                System.out.println("Token inviato da notification-be: " + JWT_ISSUER);
                 entity = new HttpEntity<>(headers);
                  response = restTemplate.exchange(uri, HttpMethod.GET, entity, new ParameterizedTypeReference<Map<String, Object>>() {});
 
                  fcmToken=(String) response.getBody().get("fcmToken");
                 try{
-                    Message fcmMessage = Message.builder()
-                            .setToken(fcmToken)
-                            .setNotification(
-                                    com.google.firebase.messaging.Notification.builder()
-                                            .setTitle("Notifica")
-                                            .setBody(notification.getMessage())
-                                            .build()
-                            )
-                            .build();
-                    String responseFcm= FirebaseMessaging.getInstance().send(fcmMessage);
+                    String responseFcm= firebaseMessagingService.sendNotification(fcmToken, "Notifica", notification.getMessage());
                     System.out.println("FCM message sent successfully: "+ responseFcm);
                 } catch (Exception e){
                     e.printStackTrace();

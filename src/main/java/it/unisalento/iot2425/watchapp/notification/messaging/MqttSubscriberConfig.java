@@ -31,11 +31,9 @@ public class MqttSubscriberConfig {
             MqttConnectOptions options = new MqttConnectOptions();
             options.setAutomaticReconnect(true);
             options.setCleanSession(true);
-
             mqttClient.connect(options);
-
+            System.out.println("Connesso: " + mqttClient.isConnected());
             ObjectMapper objectMapper = new ObjectMapper();
-
 
 
             mqttClient.subscribe(TOPICREGISTRATION, (topic, message) -> {
