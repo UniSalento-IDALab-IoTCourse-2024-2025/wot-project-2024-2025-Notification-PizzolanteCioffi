@@ -1,9 +1,6 @@
 package it.unisalento.iot2425.watchapp.notification.messaging;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
+import com.google.firebase.messaging.*;
 import org.springframework.stereotype.Service;
 @Service
 public class FirebaseMessagingService {
@@ -14,6 +11,12 @@ public class FirebaseMessagingService {
                 .setNotification(Notification.builder()
                         .setTitle(title)
                         .setBody(body)
+                        .build())
+                .setAndroidConfig(AndroidConfig.builder()
+                        .setNotification(AndroidNotification.builder()
+                                .setSound("default")
+                                .setChannelId("default_channel") // <- molto importante per Android 8+
+                                .build())
                         .build())
                 .build();
 

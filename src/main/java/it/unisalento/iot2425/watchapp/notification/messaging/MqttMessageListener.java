@@ -49,18 +49,9 @@ public class MqttMessageListener {
     public void handleMessage(String topic, Map<String, Object> message) {
         System.out.println("Messaggio gestito da handler (ciaoooo): " + topic + " → " + message);
 
-        System.out.println("topic della variabile: "+ TOPICDATA + "topic ricevuto: " + topic);
-
-        if (topic.trim().equalsIgnoreCase(TOPICDATA.trim()) && topic != null) {
-            System.out.println("il topic è data. sto procedendo con la chiamata");
-        } else {
-            System.out.println("sono complementamente rincoglionito e non riesco a capire che sono uguali");
-        }
-
 
         if(topic.equals(TOPICDATA)){
 
-            System.out.println("mi è arrivato un messaggio su data e sto salvando la notifica");
             //manda notifica
             Notification notification = new Notification();
             notification.setMessage((String) message.get("message"));
